@@ -1,5 +1,9 @@
 Welcome to my site
+ 
+doyounotice.github.io/Website/
 
-Click visit page abouth to see the site
+or
+
+doyounotice.codeberg.page
 
 you can contribute if u want
