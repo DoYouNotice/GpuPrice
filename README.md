@@ -4,6 +4,6 @@ https://doyounotice.github.io/Website/
 
 or
 
-doyounotice.codeberg.page
+https://doyounotice.codeberg.page
 
 you can contribute if u want
