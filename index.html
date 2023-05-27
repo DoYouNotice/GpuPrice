@@ -29,7 +29,7 @@
                         // Add more graphics cards here
                     };
 
-                    var basePriceUrl = "mindfactory.de/Hardware/Grafikkarten+(VGA)/";
+                    var basePriceUrl = "https://mindfactory.de/Hardware/Grafikkarten+(VGA)/";
                     var cheapestPrices = {};
                     var costPerFrame = {};
 
@@ -38,6 +38,9 @@
 
                         $.ajax({
                             url: "https://cors-anywhere.herokuapp.com/" + encodeURIComponent(url),
+                            headers: {
+                                "Origin": "https://mindfactory.de"
+                            },
                             dataType: "html",
                             success: function(response) {
                                 var priceText = $(response).find("div.p:nth-child(6) > div:nth-child(1) > div:nth-child(9)").text().trim();
