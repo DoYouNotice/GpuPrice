@@ -37,7 +37,7 @@
                         var url = basePriceUrl + cardUrl + ".html/listing_sort/6";
 
                         $.ajax({
-                            url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
+                            url: encodeURIComponent(url),
                             dataType: "html",
                             success: function(response) {
                                 var priceText = $(response).find("div.p:nth-child(6) > div:nth-child(1) > div:nth-child(9)").text().trim();
