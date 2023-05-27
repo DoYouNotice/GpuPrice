@@ -4,7 +4,7 @@ import re
 import locale
 import json
 from decimal import Decimal
-import decimal  # Add this line to import the decimal module
+import decimal
 
 locale.setlocale(locale.LC_ALL, '')
 
@@ -53,3 +53,4 @@ serialized_results = {card: float(cost) for card, cost in cost_per_frame.items()
 
 # Save results to JSON file
 with open('results.json', 'w') as file:
+    json.dump(serialized_results, file)
