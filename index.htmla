@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Graphics Card Data</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var graphicsCards = {
+			"GeForce RTX 3060 Ti": "03+05+16+-+RTX+3060+Ti",
+                         "GeForce RTX 4090": "03+05+17+-+RTX+4090",
+                          "Radeon RX 7900 XTX": "02+04+14+-+RX+7900+XTX",
+                          "GeForce RTX 4080": "03+05+17+-+RTX+4080",
+                          "Radeon RX 7900 XT": "02+04+14+-+RX+7900+XT",
+                          "Radeon RX 6950 XT": "02+04+12+-+RX+6950+XT",
+                          "GeForce RTX 4070 Ti": "03+05+17+-+RTX+4070+Ti",
+                          "GeForce RTX 3090 Ti": "03+05+16+-+RTX+3090+Ti",
+                          "Radeon RX 6900 XT": "02+04+12+-+RX+6900+XT",
+                          "GeForce RTX 3090": "03+05+16+-+RTX+3090",
+                          "Radeon RX 6800 XT": "02+04+12+-+RX+6800+XT",
+                          "GeForce RTX 3080 Ti": "03+05+16+-+RTX+3080+Ti",
+                          "GeForce RTX 4070": "03+05+17+-+RTX+4070",
+                          "GeForce RTX 3080": "03+05+16+-+RTX+3080",
+                          "Radeon RX 6800": "02+04+12+-+RX+6800",
+                          "GeForce RTX 3070 Ti": "03+05+16+-+RTX+3070+Ti",
+                          "Radeon RX 6750 XT": "02+04+12+-+RX+6750+XT",
+                          "Radeon RX 6700 XT": "02+04+12+-+RX+6700+XT",
+                          "GeForce RTX 3060": "03+05+16+-+RTX+3060",
+                          "Radeon RX 6600 XT": "02+04+12+-+RX+6600+XT",
+                          "Radeon RX 6500 XT": "02+04+12+-+RX+6500+XT",
+                          "Radeon RX 7600": "02+04+14+-+RX+7600",
+                          "GeForce RTX 4060 Ti": "03+05+17+-+RTX+4060+Ti",
+                          "Radeon RX 6650 XT": "02+04+12+-+RX+6650+XT",
+                // ... your graphics card data ...
+            };
+
+            var basePriceUrl = "https://geizhals.de/?cat=gra16_512&xf=9816_";
+            var cheapestPrices = {};
+            var costPerFrame = {};
+            var fpsData = {};
+
+            $.ajax({
+                url: "https://api.allorigins.win/raw?url=https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html",
+                dataType: "html",
+                success: function(response) {
+                    var html = $.parseHTML(response);
+                    var tableRows = $(html).find('#slice-container-L8SfcAV5o28ayEFjzq6cfX-table-10 > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(3) > tr');
+
+                    tableRows.each(function() {
+                        var name = $(this).find('td:nth-child(1) > strong:nth-child(1) > a:nth-child(1)').text().trim();
+                        var fpsPercentage = $(this).find('td:nth-child(2)').text().trim();
+                        var fpsMatch = fpsPercentage.match(/([\d.]+)fps/);
+                        var fps = fpsMatch ? parseFloat(fpsMatch[1]) : null;
+
+                        fpsData[name] = fps;
+                    });
+
+                    fetchNextPrice(); // Start fetching prices
+                },
+                error: function() {
+                    $("#results").text("No data available");
+                }
+            });
+
+            var cardNames = Object.keys(graphicsCards);
+            var currentIndex = 0;
+
+            function fetchNextPrice() {
+                if (currentIndex >= cardNames.length) {
+                    // All requests completed
+                    displayData();
+                    return;
+                }
+
+                var cardName = cardNames[currentIndex];
+                var cardUrl = graphicsCards[cardName];
+                var url = basePriceUrl + cardUrl;
+
+                $.ajax({
+                    url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
+                    headers: {
+                        "Origin": "https://mindfactory.de"
+                    },
+                    dataType: "html",
+                    success: function(response) {
+                        var priceText = $(response).find("#product0 > div:nth-child(8) > span:nth-child(1) > span:nth-child(1)").text().trim();
+                        var price = priceText.replace(/[^\d.,]/g, "").replace(".", "").replace(",", ".");
+                        price = price ? parseFloat(price) : null;
+
+                        cheapestPrices[cardName] = price;
+                        costPerFrame[cardName] = price / (fpsData[cardName] || 1);
+
+                        currentIndex++; // Move to the next card
+                        setTimeout(fetchNextPrice, 10000); // Delay before the next request
+                    },
+                    error: function() {
+                        cheapestPrices[cardName] = null;
+                        costPerFrame[cardName] = null;
+
+                        currentIndex++; // Move to the next card
+                        setTimeout(fetchNextPrice, 10000); // Delay before the next request
+                    }
+                });
+            }
+
+            function displayData() {
+                var sortedCards = Object.entries(costPerFrame).sort(function(a, b) {
+                    return a[1] - b[1];
+                });
+
+                $("#results").empty();
+
+                sortedCards.forEach(function(card) {
+                    var cardName = card[0];
+                    var price = cheapestPrices[cardName];
+                    var cost = card[1];
+                    var fps = fpsData[cardName] || "N/A";
+
+                    var result = $("<div>").addClass("result");
+                    result.append($("<h3>").text(cardName));
+                    result.append($("<p>").text("Cheapest price: " + (price ? price.toFixed(2) + " €" : "N/A")));
+                    result.append($("<p>").text("Cost per frame: " + (cost ? cost.toFixed(2) + " € per frame" : "N/A")));
+                    result.append($("<p>").text("FPS: " + fps + " (Ultra 1080p)"));
+
+                    $("#results").append(result);
+                });
+            }
+        });
+    </script>
+    <style>
+        .result {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Graphics Card Data</h1>
+    <div id="results"></div>
+</body>
+</html>
