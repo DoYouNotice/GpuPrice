@@ -32,21 +32,27 @@ for row in rows[1:]:
     # Find the columns in the row
     columns = row.find_all("td")
 
-    # Extract the graphics card name and cost per frame
-    name = columns[0].text.strip()
-    cost = columns[2].text.strip().replace("$", "").replace(",", "")
-
     try:
-        # Convert the cost to a Decimal object
-        cost = Decimal(cost)
-    except (decimal.InvalidOperation, TypeError):
-        # Handle conversion errors by setting a default cost value
-        cost = Decimal(0)
+        # Extract the graphics card name and cost per frame
+        name = columns[0].text.strip()
+        cost = columns[2].text.strip().replace("$", "").replace(",", "")
 
-    # Check if the graphics card is in our dictionary
-    if name in graphics_cards:
-        # Add the graphics card and its cost per frame to the dictionary
-        cost_per_frame[name] = cost
+        try:
+            # Convert the cost to a Decimal object
+            cost = Decimal(cost)
+        except (decimal.InvalidOperation, TypeError):
+            # Handle conversion errors by setting a default cost value
+            cost = Decimal(0)
+
+        # Check if the graphics card is in our dictionary
+        if name in graphics_cards:
+            # Add the graphics card and its cost per frame to the dictionary
+            cost_per_frame[name] = cost
+
+    except IndexError:
+        # Handle the IndexError and print the row for debugging
+        print("Error: Row skipped due to IndexError")
+        print("Row contents:", [column.text.strip() for column in columns])
 
 # Convert Decimal values to float before serializing
 serialized_results = {card: float(cost) for card, cost in cost_per_frame.items()}
