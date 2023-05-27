@@ -29,7 +29,7 @@
                         // Add more graphics cards here
                     };
 
-                    var basePriceUrl = "https://mindfactory.de/Hardware/Grafikkarten+(VGA)/";
+                    var basePriceUrl = "https://geizhals.de/?cat=gra16_512&xf=9816_03+05+17+-+RTX+4070+Ti";
                     var cheapestPrices = {};
                     var costPerFrame = {};
 
@@ -37,7 +37,7 @@
                         var url = basePriceUrl + cardUrl + ".html/listing_sort/6";
 
                         $.ajax({
-                            url: "https://cors.bridged.cc/" + encodeURIComponent(url),
+                            url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
                             headers: {
                                 "Origin": "https://mindfactory.de"
                             },
