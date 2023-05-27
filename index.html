@@ -1,108 +1,106 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Graphics Card Data</title>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script>
-    function displayData(data) {
-      var html = "";
-      if (data && data.length > 0) {
-        for (var i = 0; i < data.length; i++) {
-          var card = data[i];
-          html += "<p>" + card.name + ": Cheapest price - " + card.cheapest_price + " €, Cost per frame - " + card.cost_per_frame + " € per frame, FPS - " + card.fps + "</p>";
-        }
-      } else {
-        html = "<p>No data available</p>";
-      }
-
-      $("#data-container").html(html);
-    }
-
-    $(document).ready(function() {
-      $("#fetch-data-btn").click(function() {
-        $.ajax({
-          url: "https://api.allorigins.win/raw?url=https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html",
-          dataType: "jsonp",
-          success: function(response) {
-            var parser = new DOMParser();
-            var doc = parser.parseFromString(response.contents, "text/html");
-            var tableRows = doc.querySelectorAll("#slice-container-L8SfcAV5o28ayEFjzq6cfX-table-10 > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(3) > tr");
-
-            var graphicsCards = {};
-            for (var i = 0; i < tableRows.length; i++) {
-              var row = tableRows[i];
-              var fpsPercentage = row.querySelector("td:nth-child(2)").textContent.trim();
-              var fpsMatch = fpsPercentage.match(/([\d.]+)fps/);
-              var fps = fpsMatch ? parseFloat(fpsMatch[1]) : null;
-              var name = row.querySelector("td:nth-child(1) > strong:nth-child(1) > a:nth-child(1)").textContent.trim();
-
-              graphicsCards[name] = fps;
-            }
-
-            var base_url = "https://www.mindfactory.de/Hardware/Grafikkarten+(VGA)/";
-            var graphicsCardsList = [];
-            var count = 0;
-
-            function fetchCardData(card, card_url) {
-              var url = base_url + card_url + ".html/listing_sort/6";
-
-              $.ajax({
-                url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
-                dataType: "jsonp",
+    <title>Graphics Card Data</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $.ajax({
+                url: "https://api.allorigins.win/raw?url=https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html",
+                dataType: "html",
                 success: function(response) {
-                  var parser = new DOMParser();
-                  var doc = parser.parseFromString(response.contents, "text/html");
-                  var element = doc.querySelector("div.p:nth-child(6) > div:nth-child(1) > div:nth-child(9)");
+                    var html = $.parseHTML(response);
 
-                  if (element) {
-                    var priceText = element.textContent.trim().replace(/[^\d.,]/g, "");
-                    var price = parseFloat(priceText.replace(".", "").replace(",", "."));
-                    var costPerFrame = price / (graphicsCards[card] || 1);
-                    var formattedPrice = price.toLocaleString("en-US", { style: "currency", currency: "EUR" });
+                    var tableRows = $(html).find('#slice-container-L8SfcAV5o28ayEFjzq6cfX-table-10 > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(3) > tr');
 
-                    graphicsCardsList.push({
-                      name: card,
-                      cheapest_price: formattedPrice,
-                      cost_per_frame: costPerFrame.toFixed(2),
-                      fps: graphicsCards[card] || "N/A"
-                    });
-                  }
+                    var fpsData = {};
+                    tableRows.each(function() {
+                        var name = $(this).find('td:nth-child(1) > strong:nth-child(1) > a:nth-child(1)').text().trim();
+                        var fpsPercentage = $(this).find('td:nth-child(2)').text().trim();
+                        var fpsMatch = fpsPercentage.match(/([\d.]+)fps/);
+                        var fps = fpsMatch ? parseFloat(fpsMatch[1]) : null;
 
-                  count++;
-                  if (count === Object.keys(graphicsCards).length) {
-                    graphicsCardsList.sort(function(a, b) {
-                      return a.cost_per_frame - b.cost_per_frame;
+                        fpsData[name] = fps;
                     });
 
-                    displayData(graphicsCardsList);
-                  }
+                    var graphicsCards = {
+                        "GeForce RTX 3060 Ti": "GeForce+RTX+fuer+Gaming/RTX+3060+Ti",
+                        "GeForce RTX 4090": "GeForce+RTX+fuer+Gaming/RTX+4090"
+                        // Add more graphics cards here
+                    };
+
+                    var basePriceUrl = "https://www.mindfactory.de/Hardware/Grafikkarten+(VGA)/";
+                    var cheapestPrices = {};
+                    var costPerFrame = {};
+
+                    function fetchPrice(card, cardUrl) {
+                        var url = basePriceUrl + cardUrl + ".html/listing_sort/6";
+
+                        $.ajax({
+                            url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
+                            dataType: "html",
+                            success: function(response) {
+                                var priceText = $(response).find("div.p:nth-child(6) > div:nth-child(1) > div:nth-child(9)").text().trim();
+                                var price = priceText.replace(/[^\d.,]/g, "").replace(".", "").replace(",", ".");
+                                price = price ? parseFloat(price) : null;
+
+                                cheapestPrices[card] = price;
+                                costPerFrame[card] = price / (fpsData[card] || 1);
+
+                                displayData();
+                            },
+                            error: function() {
+                                cheapestPrices[card] = null;
+                                costPerFrame[card] = null;
+
+                                displayData();
+                            }
+                        });
+                    }
+
+                    function displayData() {
+                        var sortedCards = Object.entries(costPerFrame).sort(function(a, b) {
+                            return a[1] - b[1];
+                        });
+
+                        $("#results").empty();
+
+                        sortedCards.forEach(function(card) {
+                            var cardName = card[0];
+                            var price = cheapestPrices[cardName];
+                            var cost = card[1];
+                            var fps = fpsData[cardName] || "N/A";
+
+                            var result = $("<div>").addClass("result");
+                            result.append($("<h3>").text(cardName));
+                            result.append($("<p>").text("Cheapest price: " + (price ? price.toFixed(2) + " €" : "N/A")));
+                            result.append($("<p>").text("Cost per frame: " + (cost ? cost.toFixed(2) + " € per frame" : "N/A")));
+                            result.append($("<p>").text("FPS: " + fps + " (Ultra 1080p)"));
+
+                            $("#results").append(result);
+                        });
+                    }
+
+                    for (var card in graphicsCards) {
+                        fetchPrice(card, graphicsCards[card]);
+                    }
                 },
                 error: function() {
-                  count++;
-                  if (count === Object.keys(graphicsCards).length) {
-                    displayData(null);
-                  }
+                    $("#results").text("No data available");
                 }
-              });
-            }
-
-            for (var card in graphicsCards) {
-              if (graphicsCards.hasOwnProperty(card)) {
-                var cardUrl = card.replace(/ /g, "+");
-                fetchCardData(card, cardUrl);
-              }
-            }
-          },
-          error: function() {
-            displayData(null);
-          }
+            });
         });
-      });
-    });
-  </script>
+    </script>
+    <style>
+        .result {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
-  <button id="fetch-data-btn">Fetch Data</button>
-  <div id="data-container"></div>
+    <h1>Graphics Card Data</h1>
+    <div id="results"></div>
 </body>
 </html>
