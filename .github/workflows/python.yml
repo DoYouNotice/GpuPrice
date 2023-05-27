@@ -26,12 +26,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    -  name: Run Python script
-        run: python main.py
+    - name: Run Python script
+      run: python script.py
 
-      - name: Save results as artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: results
-          path: results.json
-    # Add additional steps for your workflow if needed
+    - name: Save results as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: results
+        path: results.json
