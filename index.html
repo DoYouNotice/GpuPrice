@@ -9,7 +9,7 @@
       if (data && data.length > 0) {
         for (var i = 0; i < data.length; i++) {
           var card = data[i];
-          html += "<p>" + card.name + ": Cost per frame - " + card.cost_per_frame + " € per frame</p>";
+          html += "<p>" + card.name + ": Cheapest price - " + card.cheapest_price + " €, Cost per frame - " + card.cost_per_frame + " € per frame, FPS - " + card.fps + "</p>";
         }
       } else {
         html = "<p>No data available</p>";
