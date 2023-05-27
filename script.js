@@ -3,6 +3,9 @@ $(document).ready(function() {
         // Parse the JSON data
         var results = JSON.parse(data);
         
+        // Log the fetched results to the console
+        console.log(results);
+        
         // Update the HTML page with the results
         var resultsDiv = $("#results");
         for (var card in results) {
