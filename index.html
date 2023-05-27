@@ -9,7 +9,7 @@
       if (data && data.rows) {
         var rows = data.rows;
 
-        for (var i = 1; i < rows.length; i++) {
+        for (var i = 0; i < rows.length; i++) {
           var columns = rows[i];
           var name = columns[0].trim();
           var fpsPercentage = columns[1].trim();
@@ -35,7 +35,7 @@
           success: function(response) {
             var parser = new DOMParser();
             var doc = parser.parseFromString(response.contents, "text/html");
-            var rows = doc.querySelectorAll("#slice-container-L8SfcAV5o28ayEFjzq6cfX-table-10 > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(3) > tr");
+            var rows = doc.querySelectorAll("table.sku-table tbody tr");
 
             var data = [];
             for (var i = 0; i < rows.length; i++) {
@@ -55,11 +55,3 @@
         });
       });
     });
-  </script>
-</head>
-<body>
-  <h1>Graphics Card Data</h1>
-  <button id="fetch-data-btn">Fetch Data</button>
-  <div id="data-container"></div>
-</body>
-</html>
