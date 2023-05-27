@@ -5,9 +5,20 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
+            var loadingAnimation = $('<div>').addClass('loading-animation');
+
+            function showLoadingAnimation() {
+                $('#results').empty().append(loadingAnimation);
+            }
+
+            function hideLoadingAnimation() {
+                loadingAnimation.remove();
+            }
+
             $.ajax({
                 url: "https://api.allorigins.win/raw?url=https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html",
                 dataType: "html",
+                beforeSend: showLoadingAnimation,
                 success: function(response) {
                     var html = $.parseHTML(response);
 
@@ -27,27 +38,6 @@
                         "GeForce RTX 3060 Ti": "03+05+16+-+RTX+3060+Ti",
                         "GeForce RTX 4090": "03+05+17+-+RTX+4090",
                         "Radeon RX 7900 XTX": "02+04+14+-+RX+7900",
-                        "GeForce RTX 4080": "03+05+17+-+RTX+4080",
-                        "Radeon RX 7900 XT": "02+04+14+-+RX+7900+XT",
-                        "Radeon RX 6950 XT": "02+04+12+-+RX+6950+XT",
-                        "GeForce RTX 4070 Ti": "03+05+17+-+RTX+4070+Ti",
-                        "GeForce RTX 3090 Ti": "03+05+16+-+RTX+3090+Ti",
-                        "Radeon RX 6900 XT": "02+04+12+-+RX+6900+XT",
-                        "GeForce RTX 3090": "03+05+16+-+RTX+3090",
-                        "Radeon RX 6800 XT": "02+04+12+-+RX+6800+XT",
-                        "GeForce RTX 3080 Ti": "03+05+16+-+RTX+3080+Ti",
-                        "GeForce RTX 4070": "03+05+17+-+RTX+4070",
-                        "GeForce RTX 3080": "03+05+16+-+RTX+3080",
-                        "Radeon RX 6800": "02+04+12+-+RX+6800",
-                        "GeForce RTX 3070 Ti": "03+05+16+-+RTX+3070+Ti",
-                        "Radeon RX 6750 XT": "02+04+12+-+RX+6750+XT",
-                        "Radeon RX 6700 XT": "02+04+12+-+RX+6700+XT",
-                        "GeForce RTX 3060": "03+05+16+-+RTX+3060",
-                        "Radeon RX 6600 XT": "02+04+12+-+RX+6600+XT",
-                        "Radeon RX 6500 XT": "02+04+12+-+RX+6500+XT",
-                        "Radeon RX 7600": "02+04+14+-+RX+7600",
-                        "GeForce RTX 4060 Ti": "03+05+17+-+RTX+4060+Ti",
-                        "Radeon RX 6650 XT": "02+04+12+-+RX+6650+XT",
                         // Add more graphics cards here
                     };
 
@@ -80,6 +70,8 @@
                                     setTimeout(function() {
                                         fetchPrice(cardList[currentIndex], graphicsCards[cardList[currentIndex]]);
                                     }, 1000); // 1 second delay
+                                } else {
+                                    hideLoadingAnimation();
                                 }
                             },
                             error: function() {
@@ -91,15 +83,11 @@
                                     setTimeout(function() {
                                         fetchPrice(cardList[currentIndex], graphicsCards[cardList[currentIndex]]);
                                     }, 1000); // 1 second delay
+                                } else {
+                                    hideLoadingAnimation();
                                 }
                             }
                         });
-                    }
-
-                    function calculateCostPerFrame() {
-                        for (var card in cheapestPrices) {
-                            costPerFrame[card] = cheapestPrices[card] / (fpsData[card] || 1);
-                        }
                     }
 
                     function displayData() {
@@ -128,6 +116,7 @@
                     fetchPrice(cardList[currentIndex], graphicsCards[cardList[currentIndex]]);
                 },
                 error: function() {
+                    hideLoadingAnimation();
                     $("#results").text("No data available");
                 }
             });
@@ -138,6 +127,29 @@
             margin-bottom: 20px;
             border: 1px solid #ccc;
             padding: 10px;
+        }
+        .loading-animation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+        }
+        .loading-animation:before {
+            content: "";
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 5px solid #ccc;
+            border-top-color: #000;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
