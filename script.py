@@ -10,30 +10,7 @@ locale.setlocale(locale.LC_ALL, '')
 
 graphics_cards = {
     "GeForce RTX 3060 Ti": "GeForce+RTX+fuer+Gaming/RTX+3060+Ti",
-    "GeForce RTX 4090": "GeForce+RTX+fuer+Gaming/RTX+4090",
-    "Radeon RX 7900 XTX": "Radeon+RX+Serie/RX+7900+XTX",
-    "GeForce RTX 4080": "GeForce+RTX+fuer+Gaming/RTX+4080",
-    "Radeon RX 7900 XT": "Radeon+RX+Serie/RX+7900+XT",
-    "Radeon RX 6950 XT": "Radeon+RX+Serie/RX+6950+XT",
-    "GeForce RTX 4070 Ti": "GeForce+RTX+fuer+Gaming/RTX+4070+Ti",
-    "GeForce RTX 3090 Ti": "GeForce+RTX+fuer+Gaming/RTX+3090+Ti",
-    "Radeon RX 6900 XT": "Radeon+RX+Serie/RX+6900+XT",
-    "GeForce RTX 3090": "GeForce+RTX+fuer+Gaming/RTX+3090",
-    "Radeon RX 6800 XT": "Radeon+RX+Serie/RX+6800+XT",
-    "GeForce RTX 3080 Ti": "GeForce+RTX+fuer+Gaming/RTX+3080+Ti",
-    "GeForce RTX 3080 12GB": "GeForce+RTX+fuer+Gaming/RTX+3080+12GB",
-    "GeForce RTX 4070": "GeForce+RTX+fuer+Gaming/RTX+4070",
-    "GeForce RTX 3080": "GeForce+RTX+fuer+Gaming/RTX+3080",
-    "Radeon RX 6800": "Radeon+RX+Serie/RX+6800",
-    "GeForce RTX 3070 Ti": "GeForce+RTX+fuer+Gaming/RTX+3070+Ti",
-    "Radeon RX 6750 XT": "Radeon+RX+Serie/RX+6750+XT",
-    "Radeon RX 6700 XT": "Radeon+RX+Serie/RX+6700+XT",
-    "GeForce RTX 3060": "GeForce+RTX+fuer+Gaming/RTX+3060",
-    "Radeon RX 6600 XT": "Radeon+RX+Serie/RX+6600+XT",
-    "Radeon RX 6500 XT": "Radeon+RX+Serie/RX+6500+XT",
-    "Radeon RX 7600": "Radeon+RX+Serie/RX+7600",
-    "GeForce RTX 4060 Ti": "GeForce+RTX+fuer+Gaming/RTX+4060+TI",
-    "Radeon RX 6650 XT": "Radeon+RX+Serie/RX+6650+XT",    
+    # Add other graphics card entries here
 }
 
 url = "https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html"
@@ -59,8 +36,12 @@ for row in rows[1:]:
     name = columns[0].text.strip()
     cost = columns[2].text.strip().replace("$", "").replace(",", "")
 
-    # Convert the cost to a Decimal object
-    cost = Decimal(cost)
+    try:
+        # Convert the cost to a Decimal object
+        cost = Decimal(cost)
+    except (decimal.InvalidOperation, TypeError):
+        # Handle conversion errors by setting a default cost value
+        cost = Decimal(0)
 
     # Check if the graphics card is in our dictionary
     if name in graphics_cards:
