@@ -5,7 +5,6 @@ import locale
 import json
 from decimal import Decimal
 
-
 locale.setlocale(locale.LC_ALL, '')
 
 graphics_cards = {
@@ -39,7 +38,7 @@ for row in rows[1:]:
     try:
         # Convert the cost to a Decimal object
         cost = Decimal(cost)
-    except (decimal.InvalidOperation, TypeError):
+    except (Decimal.InvalidOperation, TypeError):
         # Handle conversion errors by setting a default cost value
         cost = Decimal(0)
 
