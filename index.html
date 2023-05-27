@@ -4,44 +4,54 @@
   <title>Graphics Card Data</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
+    function processData(data) {
+      var html = "";
+      if (data && data.rows) {
+        var rows = data.rows;
+
+        for (var i = 1; i < rows.length; i++) {
+          var columns = rows[i];
+          var name = columns[0].trim();
+          var fpsPercentage = columns[1].trim();
+          var fpsMatch = fpsPercentage.match(/([\d.]+)fps/);
+          var fps = fpsMatch ? parseFloat(fpsMatch[1]) : null;
+          var cost = columns[2].trim().replace("$", "").replace(",", "");
+
+          var costPerFrame = fps ? (parseFloat(cost) / fps).toFixed(2) : "N/A";
+          html += "<p>" + name + ": Cost per frame - " + costPerFrame + "</p>";
+        }
+      } else {
+        html = "<p>No data available</p>";
+      }
+
+      $("#data-container").html(html);
+    }
+
     $(document).ready(function() {
       $("#fetch-data-btn").click(function() {
-        $.getJSON("https://api.allorigins.win/get?url=https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html", function(response) {
-          var html = "";
-          var data = [];
-          if (response && response.contents) {
-            var contents = response.contents;
+        $.ajax({
+          url: "https://api.allorigins.win/raw?url=https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html",
+          dataType: "jsonp",
+          success: function(response) {
             var parser = new DOMParser();
-            var doc = parser.parseFromString(contents, "text/html");
-            var rows = doc.querySelectorAll("tr");
+            var doc = parser.parseFromString(response.contents, "text/html");
+            var rows = doc.querySelectorAll("#slice-container-L8SfcAV5o28ayEFjzq6cfX-table-10 > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(3) > tr");
 
-            for (var i = 1; i < rows.length; i++) {
-              var columns = rows[i].querySelectorAll("td");
-              var name = columns[0].textContent.trim();
-              var fpsPercentage = columns[1].textContent.trim();
-              var fpsMatch = fpsPercentage.match(/([\d.]+)fps/);
-              var fps = fpsMatch ? parseFloat(fpsMatch[1]) : null;
-              var cost = columns[2].textContent.trim().replace("$", "").replace(",", "");
-
-              data.push({
-                "name": name,
-                "fps": fps,
-                "cost": cost
-              });
+            var data = [];
+            for (var i = 0; i < rows.length; i++) {
+              var row = rows[i].querySelectorAll("td");
+              var rowData = [];
+              for (var j = 0; j < row.length; j++) {
+                rowData.push(row[j].textContent.trim());
+              }
+              data.push(rowData);
             }
-          }
 
-          if (data.length > 0) {
-            for (var j = 0; j < data.length; j++) {
-              var card = data[j];
-              var costPerFrame = card.fps ? (parseFloat(card.cost) / card.fps).toFixed(2) : "N/A";
-              html += "<p>" + card.name + ": Cost per frame - " + costPerFrame + "</p>";
-            }
-          } else {
-            html = "<p>No data available</p>";
+            processData({ rows: data });
+          },
+          error: function() {
+            processData(null);
           }
-
-          $("#data-container").html(html);
         });
       });
     });
