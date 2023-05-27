@@ -24,12 +24,12 @@
                     });
 
                     var graphicsCards = {
-                        "GeForce RTX 3060 Ti": "GeForce+RTX+fuer+Gaming/RTX+3060+Ti",
-                        "GeForce RTX 4090": "GeForce+RTX+fuer+Gaming/RTX+4090"
+                        "GeForce RTX 3060 Ti": "RTX+3060+Ti",
+                        "GeForce RTX 4090": "RTX+4090"
                         // Add more graphics cards here
                     };
 
-                    var basePriceUrl = "https://geizhals.de/?cat=gra16_512&xf=9816_03+05+17+-+RTX+4070+Ti";
+                    var basePriceUrl = "https://geizhals.de/?cat=gra16_512&xf=9816_03+05+17+-+";
                     var cheapestPrices = {};
                     var costPerFrame = {};
 
@@ -43,7 +43,7 @@
                             },
                             dataType: "html",
                             success: function(response) {
-                                var priceText = $(response).find("div.p:nth-child(6) > div:nth-child(1) > div:nth-child(9)").text().trim();
+                                var priceText = $(response).find("#product0 > div:nth-child(8) > span:nth-child(1) > span:nth-child(1)").text().trim();
                                 var price = priceText.replace(/[^\d.,]/g, "").replace(".", "").replace(",", ".");
                                 price = price ? parseFloat(price) : null;
 
