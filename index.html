@@ -6,7 +6,7 @@
     <script>
         $(document).ready(function() {
             $.ajax({
-                url: "https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html",
+                url: "https://api.allorigins.win/raw?url=https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html",
                 dataType: "html",
                 success: function(response) {
                     var html = $.parseHTML(response);
@@ -37,7 +37,7 @@
                         var url = basePriceUrl + cardUrl + ".html/listing_sort/6";
 
                         $.ajax({
-                            url: "https://www.mindfactory.de/Hardware/Grafikkarten+(VGA)/",
+                            url: "https://cors-anywhere.herokuapp.com/" + encodeURIComponent(url),
                             dataType: "html",
                             success: function(response) {
                                 var priceText = $(response).find("div.p:nth-child(6) > div:nth-child(1) > div:nth-child(9)").text().trim();
