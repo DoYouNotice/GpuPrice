@@ -5,42 +5,51 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
     $(document).ready(function() {
-      // Function to handle the click event
-      function handleClick() {
-        $.ajax({
-          type: "GET",
-          url: "https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html",
-          success: function(response) {
-            var data = $(response).find('#slice-container-L8SfcAV5o28ayEFjzq6cfX-table-10 tr:has(td)').map(function(i, v) {
-              var $td = $(this).find('td');
-              var name = $td.eq(0).text().trim();
-              var fpsPercentage = $td.eq(1).text().trim();
+      $("#fetch-data-btn").click(function() {
+        $.getJSON("https://api.allorigins.win/get?url=https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html", function(response) {
+          var html = "";
+          var data = [];
+          if (response && response.contents) {
+            var contents = response.contents;
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(contents, "text/html");
+            var rows = doc.querySelectorAll("tr");
+
+            for (var i = 1; i < rows.length; i++) {
+              var columns = rows[i].querySelectorAll("td");
+              var name = columns[0].textContent.trim();
+              var fpsPercentage = columns[1].textContent.trim();
               var fpsMatch = fpsPercentage.match(/([\d.]+)fps/);
               var fps = fpsMatch ? parseFloat(fpsMatch[1]) : null;
-              var cost = $td.eq(2).text().trim().replace("$", "").replace(",", "");
-              return { name: name, fps: fps, cost: cost };
-            }).get();
-            
-            var html = "";
-            for (var i = 0; i < data.length; i++) {
-              var card = data[i];
+              var cost = columns[2].textContent.trim().replace("$", "").replace(",", "");
+
+              data.push({
+                "name": name,
+                "fps": fps,
+                "cost": cost
+              });
+            }
+          }
+
+          if (data.length > 0) {
+            for (var j = 0; j < data.length; j++) {
+              var card = data[j];
               var costPerFrame = card.fps ? (parseFloat(card.cost) / card.fps).toFixed(2) : "N/A";
               html += "<p>" + card.name + ": Cost per frame - " + costPerFrame + "</p>";
             }
-            
-            $("#data-container").html(html);
+          } else {
+            html = "<p>No data available</p>";
           }
+
+          $("#data-container").html(html);
         });
-      }
-      
-      // Bind the click event to the button
-      $("#scrape-button").click(handleClick);
+      });
     });
   </script>
 </head>
 <body>
   <h1>Graphics Card Data</h1>
-  <button id="scrape-button">Scrape Data</button>
+  <button id="fetch-data-btn">Fetch Data</button>
   <div id="data-container"></div>
 </body>
 </html>
