@@ -38,7 +38,7 @@ for row in rows[1:]:
     try:
         # Convert the cost to a Decimal object
         cost = Decimal(cost)
-    except (Decimal.InvalidOperation, TypeError):
+    except (decimal.InvalidOperation, TypeError):
         # Handle conversion errors by setting a default cost value
         cost = Decimal(0)
 
