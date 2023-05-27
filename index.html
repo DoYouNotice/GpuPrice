@@ -24,64 +24,39 @@
                     });
 
                     var graphicsCards = {
-                         "GeForce RTX 3060 Ti": "03+05+16+-+RTX+3060+Ti",
-                         "GeForce RTX 4090": "03+05+17+-+RTX+4090",
-                          "Radeon RX 7900 XTX": "02+04+14+-+RX+7900",
-                          "GeForce RTX 4080": "03+05+17+-+RTX+4080",
-                          "Radeon RX 7900 XT": "02+04+14+-+RX+7900+XT",
-                          "Radeon RX 6950 XT": "02+04+12+-+RX+6950+XT",
-                          "GeForce RTX 4070 Ti": "03+05+17+-+RTX+4070+Ti",
-                          "GeForce RTX 3090 Ti": "03+05+16+-+RTX+3090+Ti",
-                          "Radeon RX 6900 XT": "02+04+12+-+RX+6900+XT",
-                          "GeForce RTX 3090": "03+05+16+-+RTX+3090",
-                          "Radeon RX 6800 XT": "02+04+12+-+RX+6800+XT",
-                          "GeForce RTX 3080 Ti": "03+05+16+-+RTX+3080+Ti",
-                          "GeForce RTX 4070": "03+05+17+-+RTX+4070",
-                          "GeForce RTX 3080": "03+05+16+-+RTX+3080",
-                          "Radeon RX 6800": "02+04+12+-+RX+6800",
-                          "GeForce RTX 3070 Ti": "03+05+16+-+RTX+3070+Ti",
-                          "Radeon RX 6750 XT": "02+04+12+-+RX+6750+XT",
-                          "Radeon RX 6700 XT": "02+04+12+-+RX+6700+XT",
-                          "GeForce RTX 3060": "03+05+16+-+RTX+3060",
-                          "Radeon RX 6600 XT": "02+04+12+-+RX+6600+XT",
-                          "Radeon RX 6500 XT": "02+04+12+-+RX+6500+XT",
-                          "Radeon RX 7600": "02+04+14+-+RX+7600",
-                          "GeForce RTX 4060 Ti": "03+05+17+-+RTX+4060+Ti",
-                          "Radeon RX 6650 XT": "02+04+12+-+RX+6650+XT",  
+                        "GeForce RTX 3060 Ti": "03+05+16+-+RTX+3060+Ti",
+                        "GeForce RTX 4090": "03+05+17+-+RTX+4090",
+                        "Radeon RX 7900 XTX": "02+04+14+-+RX+7900",
+                        "GeForce RTX 4080": "03+05+17+-+RTX+4080",
+                        "Radeon RX 7900 XT": "02+04+14+-+RX+7900+XT",
+                        "Radeon RX 6950 XT": "02+04+12+-+RX+6950+XT",
+                        "GeForce RTX 4070 Ti": "03+05+17+-+RTX+4070+Ti",
+                        "GeForce RTX 3090 Ti": "03+05+16+-+RTX+3090+Ti",
+                        "Radeon RX 6900 XT": "02+04+12+-+RX+6900+XT",
+                        "GeForce RTX 3090": "03+05+16+-+RTX+3090",
+                        "Radeon RX 6800 XT": "02+04+12+-+RX+6800+XT",
+                        "GeForce RTX 3080 Ti": "03+05+16+-+RTX+3080+Ti",
+                        "GeForce RTX 4070": "03+05+17+-+RTX+4070",
+                        "GeForce RTX 3080": "03+05+16+-+RTX+3080",
+                        "Radeon RX 6800": "02+04+12+-+RX+6800",
+                        "GeForce RTX 3070 Ti": "03+05+16+-+RTX+3070+Ti",
+                        "Radeon RX 6750 XT": "02+04+12+-+RX+6750+XT",
+                        "Radeon RX 6700 XT": "02+04+12+-+RX+6700+XT",
+                        "GeForce RTX 3060": "03+05+16+-+RTX+3060",
+                        "Radeon RX 6600 XT": "02+04+12+-+RX+6600+XT",
+                        "Radeon RX 6500 XT": "02+04+12+-+RX+6500+XT",
+                        "Radeon RX 7600": "02+04+14+-+RX+7600",
+                        "GeForce RTX 4060 Ti": "03+05+17+-+RTX+4060+Ti",
+                        "Radeon RX 6650 XT": "02+04+12+-+RX+6650+XT",  
                         // Add more graphics cards here
                     };
 
-                    var basePriceUrl = "https://geizhals.de/?cat=gra16_512&xf=9816_";
+                    var priceData = $(html).find('#slice-container-L8SfcAV5o28ayEFjzq6cfX-table-10 > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(3) > tr td:nth-child(5)').map(function() {
+                        return $(this).text().trim().replace(/[^\d.,]/g, "").replace(".", "").replace(",", ".");
+                    }).get();
+
                     var cheapestPrices = {};
                     var costPerFrame = {};
-
-                    function fetchPrice(card, cardUrl) {
-                        var url = basePriceUrl + cardUrl;
-
-                        $.ajax({
-                            url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
-                            headers: {
-                                "Origin": "https://mindfactory.de"
-                            },
-                            dataType: "html",
-                            success: function(response) {
-                                var priceText = $(response).find("#product0 > div:nth-child(8) > span:nth-child(1) > span:nth-child(1)").text().trim();
-                                var price = priceText.replace(/[^\d.,]/g, "").replace(".", "").replace(",", ".");
-                                price = price ? parseFloat(price) : null;
-
-                                cheapestPrices[card] = price;
-                                costPerFrame[card] = price / (fpsData[card] || 1);
-
-                                displayData();
-                            },
-                            error: function() {
-                                cheapestPrices[card] = null;
-                                costPerFrame[card] = null;
-
-                                displayData();
-                            }
-                        });
-                    }
 
                     function displayData() {
                         var sortedCards = Object.entries(costPerFrame).sort(function(a, b) {
@@ -106,9 +81,15 @@
                         });
                     }
 
+                    var index = 0;
                     for (var card in graphicsCards) {
-                        fetchPrice(card, graphicsCards[card]);
+                        var price = priceData[index] ? parseFloat(priceData[index]) : null;
+                        cheapestPrices[card] = price;
+                        costPerFrame[card] = price / (fpsData[card] || 1);
+                        index++;
                     }
+
+                    displayData();
                 },
                 error: function() {
                     $("#results").text("No data available");
