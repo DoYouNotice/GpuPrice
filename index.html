@@ -4,21 +4,12 @@
   <title>Graphics Card Data</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
-    function processData(data) {
+    function displayData(data) {
       var html = "";
-      if (data && data.rows) {
-        var rows = data.rows;
-
-        for (var i = 0; i < rows.length; i++) {
-          var columns = rows[i];
-          var name = columns[0].trim();
-          var fpsPercentage = columns[1].trim();
-          var fpsMatch = fpsPercentage.match(/([\d.]+)fps/);
-          var fps = fpsMatch ? parseFloat(fpsMatch[1]) : null;
-          var cost = columns[2].trim().replace("$", "").replace(",", "");
-
-          var costPerFrame = fps ? (parseFloat(cost) / fps).toFixed(2) : "N/A";
-          html += "<p>" + name + ": Cost per frame - " + costPerFrame + "</p>";
+      if (data && data.length > 0) {
+        for (var i = 0; i < data.length; i++) {
+          var card = data[i];
+          html += "<p>" + card.name + ": Cost per frame - " + card.cost_per_frame + " € per frame</p>";
         }
       } else {
         html = "<p>No data available</p>";
@@ -35,22 +26,75 @@
           success: function(response) {
             var parser = new DOMParser();
             var doc = parser.parseFromString(response.contents, "text/html");
-            var rows = doc.querySelectorAll("table.sku-table tbody tr");
+            var tableRows = doc.querySelectorAll("#slice-container-L8SfcAV5o28ayEFjzq6cfX-table-10 > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(3) > tr");
 
-            var data = [];
-            for (var i = 0; i < rows.length; i++) {
-              var row = rows[i].querySelectorAll("td");
-              var rowData = [];
-              for (var j = 0; j < row.length; j++) {
-                rowData.push(row[j].textContent.trim());
-              }
-              data.push(rowData);
+            var graphicsCards = {};
+            for (var i = 0; i < tableRows.length; i++) {
+              var row = tableRows[i];
+              var fpsPercentage = row.querySelector("td:nth-child(2)").textContent.trim();
+              var fpsMatch = fpsPercentage.match(/([\d.]+)fps/);
+              var fps = fpsMatch ? parseFloat(fpsMatch[1]) : null;
+              var name = row.querySelector("td:nth-child(1) > strong:nth-child(1) > a:nth-child(1)").textContent.trim();
+
+              graphicsCards[name] = fps;
             }
 
-            processData({ rows: data });
+            var base_url = "https://www.mindfactory.de/Hardware/Grafikkarten+(VGA)/";
+            var graphicsCardsList = [];
+            var count = 0;
+
+            function fetchCardData(card, card_url) {
+              var url = base_url + card_url + ".html/listing_sort/6";
+
+              $.ajax({
+                url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
+                dataType: "jsonp",
+                success: function(response) {
+                  var parser = new DOMParser();
+                  var doc = parser.parseFromString(response.contents, "text/html");
+                  var element = doc.querySelector("div.p:nth-child(6) > div:nth-child(1) > div:nth-child(9)");
+
+                  if (element) {
+                    var priceText = element.textContent.trim().replace(/[^\d.,]/g, "");
+                    var price = parseFloat(priceText.replace(".", "").replace(",", "."));
+                    var costPerFrame = price / (graphicsCards[card] || 1);
+                    var formattedPrice = price.toLocaleString("en-US", { style: "currency", currency: "EUR" });
+
+                    graphicsCardsList.push({
+                      name: card,
+                      cheapest_price: formattedPrice,
+                      cost_per_frame: costPerFrame.toFixed(2),
+                      fps: graphicsCards[card] || "N/A"
+                    });
+                  }
+
+                  count++;
+                  if (count === Object.keys(graphicsCards).length) {
+                    graphicsCardsList.sort(function(a, b) {
+                      return a.cost_per_frame - b.cost_per_frame;
+                    });
+
+                    displayData(graphicsCardsList);
+                  }
+                },
+                error: function() {
+                  count++;
+                  if (count === Object.keys(graphicsCards).length) {
+                    displayData(null);
+                  }
+                }
+              });
+            }
+
+            for (var card in graphicsCards) {
+              if (graphicsCards.hasOwnProperty(card)) {
+                var cardUrl = card.replace(/ /g, "+");
+                fetchCardData(card, cardUrl);
+              }
+            }
           },
           error: function() {
-            processData(null);
+            displayData(null);
           }
         });
       });
