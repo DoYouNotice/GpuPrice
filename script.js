@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    $.get("results.json", function(data) {
+    $.get("results/results.json", function(data) {
         // Parse the JSON data
         var results = JSON.parse(data);
         
