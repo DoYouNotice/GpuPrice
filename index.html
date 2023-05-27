@@ -55,6 +55,9 @@
                     var cheapestPrices = {};
                     var costPerFrame = {};
 
+                    var cardList = Object.keys(graphicsCards);
+                    var currentIndex = 0;
+
                     function fetchPrice(card, cardUrl) {
                         var url = basePriceUrl + cardUrl;
 
@@ -71,12 +74,24 @@
 
                                 cheapestPrices[card] = price;
                                 displayData();
-                                calculateCostPerFrame();
+
+                                currentIndex++;
+                                if (currentIndex < cardList.length) {
+                                    setTimeout(function() {
+                                        fetchPrice(cardList[currentIndex], graphicsCards[cardList[currentIndex]]);
+                                    }, 1000); // 1 second delay
+                                }
                             },
                             error: function() {
                                 cheapestPrices[card] = null;
                                 displayData();
-                                calculateCostPerFrame();
+
+                                currentIndex++;
+                                if (currentIndex < cardList.length) {
+                                    setTimeout(function() {
+                                        fetchPrice(cardList[currentIndex], graphicsCards[cardList[currentIndex]]);
+                                    }, 1000); // 1 second delay
+                                }
                             }
                         });
                     }
@@ -110,9 +125,7 @@
                         });
                     }
 
-                    for (var card in graphicsCards) {
-                        fetchPrice(card, graphicsCards[card]);
-                    }
+                    fetchPrice(cardList[currentIndex], graphicsCards[cardList[currentIndex]]);
                 },
                 error: function() {
                     $("#results").text("No data available");
