@@ -34,7 +34,7 @@
                     var costPerFrame = {};
 
                     function fetchPrice(card, cardUrl) {
-                        var url = basePriceUrl + cardUrl + ".html/listing_sort/6";
+                        var url = basePriceUrl + cardUrl;
 
                         $.ajax({
                             url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
