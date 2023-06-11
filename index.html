@@ -6,30 +6,30 @@
     <script>
         $(document).ready(function() {
             var graphicsCards = {
-			"GeForce RTX 3060 Ti": "03+05+16+-+RTX+3060+Ti",
-                         "GeForce RTX 4090": "03+05+17+-+RTX+4090",
-                          "Radeon RX 7900 XTX": "02+04+14+-+RX+7900+XTX",
-                          "GeForce RTX 4080": "03+05+17+-+RTX+4080",
-                          "Radeon RX 7900 XT": "02+04+14+-+RX+7900+XT",
-                          "Radeon RX 6950 XT": "02+04+12+-+RX+6950+XT",
-                          "GeForce RTX 4070 Ti": "03+05+17+-+RTX+4070+Ti",
-                          "GeForce RTX 3090 Ti": "03+05+16+-+RTX+3090+Ti",
-                          "Radeon RX 6900 XT": "02+04+12+-+RX+6900+XT",
-                          "GeForce RTX 3090": "03+05+16+-+RTX+3090",
-                          "Radeon RX 6800 XT": "02+04+12+-+RX+6800+XT",
-                          "GeForce RTX 3080 Ti": "03+05+16+-+RTX+3080+Ti",
-                          "GeForce RTX 4070": "03+05+17+-+RTX+4070",
-                          "GeForce RTX 3080": "03+05+16+-+RTX+3080",
-                          "Radeon RX 6800": "02+04+12+-+RX+6800",
-                          "GeForce RTX 3070 Ti": "03+05+16+-+RTX+3070+Ti",
-                          "Radeon RX 6750 XT": "02+04+12+-+RX+6750+XT",
-                          "Radeon RX 6700 XT": "02+04+12+-+RX+6700+XT",
-                          "GeForce RTX 3060": "03+05+16+-+RTX+3060",
-                          "Radeon RX 6600 XT": "02+04+12+-+RX+6600+XT",
-                          "Radeon RX 6500 XT": "02+04+12+-+RX+6500+XT",
-                          "Radeon RX 7600": "02+04+14+-+RX+7600",
-                          "GeForce RTX 4060 Ti": "03+05+17+-+RTX+4060+Ti",
-                          "Radeon RX 6650 XT": "02+04+12+-+RX+6650+XT",
+                "GeForce RTX 3060 Ti": "03+05+16+-+RTX+3060+Ti",
+                "GeForce RTX 4090": "03+05+17+-+RTX+4090",
+                "Radeon RX 7900 XTX": "02+04+14+-+RX+7900+XTX",
+                "GeForce RTX 4080": "03+05+17+-+RTX+4080",
+                "Radeon RX 7900 XT": "02+04+14+-+RX+7900+XT",
+                "Radeon RX 6950 XT": "02+04+12+-+RX+6950+XT",
+                "GeForce RTX 4070 Ti": "03+05+17+-+RTX+4070+Ti",
+                "GeForce RTX 3090 Ti": "03+05+16+-+RTX+3090+Ti",
+                "Radeon RX 6900 XT": "02+04+12+-+RX+6900+XT",
+                "GeForce RTX 3090": "03+05+16+-+RTX+3090",
+                "Radeon RX 6800 XT": "02+04+12+-+RX+6800+XT",
+                "GeForce RTX 3080 Ti": "03+05+16+-+RTX+3080+Ti",
+                "GeForce RTX 4070": "03+05+17+-+RTX+4070",
+                "GeForce RTX 3080": "03+05+16+-+RTX+3080",
+                "Radeon RX 6800": "02+04+12+-+RX+6800",
+                "GeForce RTX 3070 Ti": "03+05+16+-+RTX+3070+Ti",
+                "Radeon RX 6750 XT": "02+04+12+-+RX+6750+XT",
+                "Radeon RX 6700 XT": "02+04+12+-+RX+6700+XT",
+                "GeForce RTX 3060": "03+05+16+-+RTX+3060",
+                "Radeon RX 6600 XT": "02+04+12+-+RX+6600+XT",
+                "Radeon RX 6500 XT": "02+04+12+-+RX+6500+XT",
+                "Radeon RX 7600": "02+04+14+-+RX+7600",
+                "GeForce RTX 4060 Ti": "03+05+17+-+RTX+4060+Ti",
+                "Radeon RX 6650 XT": "02+04+12+-+RX+6650+XT",
                 // ... your graphics card data ...
             };
 
@@ -39,7 +39,7 @@
             var fpsData = {};
 
             $.ajax({
-                url: "https://api.allorigins.win/raw?url=https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html",
+                url: "https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html",
                 dataType: "html",
                 success: function(response) {
                     var html = $.parseHTML(response);
@@ -76,11 +76,9 @@
                 var url = basePriceUrl + cardUrl;
 
                 $.ajax({
-                    url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
-                    headers: {
-                        "Origin": "https://mindfactory.de"
-                    },
+                    url: url,
                     dataType: "html",
+                    async: false, // Make the request synchronous
                     success: function(response) {
                         var priceText = $(response).find("#product0 > div:nth-child(8) > span:nth-child(1) > span:nth-child(1)").text().trim();
                         var price = priceText.replace(/[^\d.,]/g, "").replace(".", "").replace(",", ".");
@@ -90,14 +88,14 @@
                         costPerFrame[cardName] = price / (fpsData[cardName] || 1);
 
                         currentIndex++; // Move to the next card
-                        setTimeout(fetchNextPrice, 10000); // Delay before the next request
+                        fetchNextPrice(); // Fetch the next price immediately
                     },
                     error: function() {
                         cheapestPrices[cardName] = null;
                         costPerFrame[cardName] = null;
 
                         currentIndex++; // Move to the next card
-                        setTimeout(fetchNextPrice, 10000); // Delay before the next request
+                        fetchNextPrice(); // Fetch the next price immediately
                     }
                 });
             }
