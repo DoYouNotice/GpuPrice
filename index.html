@@ -36,7 +36,12 @@
             var basePriceUrl = "https://geizhals.de/?cat=gra16_512&v=e&hloc=at&hloc=de&t=v&sort=p&bl1_id=30&xf=9816_";
             var cheapestPrices = {};
             var costPerFrame = {};
-            var fpsData = {};
+            var fpsData = {
+				"1080p Ultra": {},
+                "1080p Medium": {},
+                "1440p Ultra": {},
+                "4k Ultra": {}
+            };
 
             $.ajax({
                 url: "https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html",
@@ -44,14 +49,25 @@
                 success: function(response) {
                     var html = $.parseHTML(response);
                     var tableRows = $(html).find('#slice-container-L8SfcAV5o28ayEFjzq6cfX-table-10 > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(3) > tr');
-
                     tableRows.each(function() {
                         var name = $(this).find('td:nth-child(1) > strong:nth-child(1) > a:nth-child(1)').text().trim();
-                        var fpsPercentage = $(this).find('td:nth-child(2)').text().trim();
-                        var fpsMatch = fpsPercentage.match(/([\d.]+)fps/);
-                        var fps = fpsMatch ? parseFloat(fpsMatch[1]) : null;
-
-                        fpsData[name] = fps;
+                        var get1080pu = $(this).find('td:nth-child(2)').text().trim();
+						var get1080p = $(this).find('td:nth-child(3)').text().trim();
+						var get1440p = $(this).find('td:nth-child(4)').text().trim();
+						var get4k = $(this).find('td:nth-child(5)').text().trim();
+                        var Match1080pu = get1080pu.match(/([\d.]+)fps/);
+						var Match1080p = get1080p.match(/([\d.]+)fps/);
+						var Match1440p = get1440p.match(/([\d.]+)fps/);
+						var Match4k = get4k.match(/([\d.]+)fps/);
+                        var fps1080pu = Match1080pu ? parseFloat(Match1080pu[1]) : null;
+						var fps1080p = Match1080p ? parseFloat(Match1080p[1]) : null;
+						var fps1440p = Match1440p ? parseFloat(Match1440p[1]) : null;
+						var fps4k = Match4k ? parseFloat(Match4k[1]) : null;
+						
+						fpsData["1080p Ultra"] [name] = fps1080pu;
+                        fpsData["1080p Medium"][name] = fps1080p;
+						fpsData["1440p Ultra"][name] = fps1440p;
+						fpsData["4k Ultra"][name] = fps4k;
                     });
 
                     fetchNextPrice(); // Start fetching prices
@@ -85,14 +101,24 @@
                         price = price ? parseFloat(price) : null;
 
                         cheapestPrices[cardName] = price;
-                        costPerFrame[cardName] = price / (fpsData[cardName] || 1);
+                        costPerFrame[cardName] = {
+							"1080p Ultra": price / (fpsData["1080p Ultra"][cardName] || 1),
+                            "1080p Medium": price / (fpsData["1080p Medium"][cardName] || 1),
+                            "1440p Ultra": price / (fpsData["1440p Ultra"][cardName] || 1),
+                            "4k Ultra": price / (fpsData["4k Ultra"][cardName] || 1)
+                        };
 
                         currentIndex++; // Move to the next card
                         fetchNextPrice(); // Fetch the next price immediately
                     },
                     error: function() {
                         cheapestPrices[cardName] = null;
-                        costPerFrame[cardName] = null;
+                        costPerFrame[cardName] = {
+							"1080p Ultra": null,
+                            "1080p Medium": null,
+                            "1440p Ultra": null,
+                            "4k Ultra": null
+                        };
 
                         currentIndex++; // Move to the next card
                         fetchNextPrice(); // Fetch the next price immediately
@@ -101,39 +127,66 @@
             }
 
             function displayData() {
-                var sortedCards = Object.entries(costPerFrame).sort(function(a, b) {
-                    return a[1] - b[1];
-                });
+    var sortKey = $("#sortOrder").val();
+    var sortedCards = Object.entries(costPerFrame).sort(function(a, b) {
+        return a[1][sortKey] - b[1][sortKey];
+    });
 
                 $("#results").empty();
 
                 sortedCards.forEach(function(card) {
                     var cardName = card[0];
                     var price = cheapestPrices[cardName];
-                    var cost = card[1];
-                    var fps = fpsData[cardName] || "N/A";
+					var cost1080pu = card[1]["1080p Ultra"];
+                    var cost1080p = card[1]["1080p Medium"];
+                    var cost1440p = card[1]["1440p Ultra"];
+                    var cost4k = card[1]["4k Ultra"];
+					var fps1080pu = fpsData["1080p Ultra"][cardName] || "N/A";
+                    var fps1080p = fpsData["1080p Medium"][cardName] || "N/A";
+                    var fps1440p = fpsData["1440p Ultra"][cardName] || "N/A";
+                    var fps4k = fpsData["4k Ultra"][cardName] || "N/A";
 
                     var result = $("<div>").addClass("result");
                     result.append($("<h3>").text(cardName));
                     result.append($("<p>").text("Cheapest price: " + (price ? price.toFixed(2) + " €" : "N/A")));
-                    result.append($("<p>").text("Cost per frame: " + (cost ? cost.toFixed(2) + " € per frame" : "N/A")));
-                    result.append($("<p>").text("FPS: " + fps + " (Ultra 1080p)"));
+					result.append($("<p>").text("Cost per frame (1080p Ultra): " + (cost1080pu ? cost1080pu.toFixed(2) + " € per frame" : "N/A")));
+                    result.append($("<p>").text("Cost per frame (1080p Medium): " + (cost1080p ? cost1080p.toFixed(2) + " € per frame" : "N/A")));
+                    result.append($("<p>").text("Cost per frame (1440p Ultra): " + (cost1440p ? cost1440p.toFixed(2) + " € per frame" : "N/A")));
+                    result.append($("<p>").text("Cost per frame (4k Ultra): " + (cost4k ? cost4k.toFixed(2) + " € per frame" : "N/A")));
+                    result.append($("<p>").text("FPS (1080p Ultra): " + fps1080pu));
+					result.append($("<p>").text("FPS (1080p Medium): " + fps1080p));
+                    result.append($("<p>").text("FPS (1440p Ultra): " + fps1440p));
+                    result.append($("<p>").text("FPS (4k Ultra): " + fps4k));
 
                     $("#results").append(result);
+
                 });
-            }
+            // Add change event handler to the select element
+            $("#sortOrder").change(function() {
+                displayData(); // Update displayed data
+            });
+			
+			}
+			
         });
     </script>
     <style>
         .result {
             margin-bottom: 20px;
-            border: 1px solid #ccc;
             padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <h1>Graphics Card Data</h1>
+<select id="sortOrder">
+    <option value="1080p Ultra">1080p Ultra</option>
+    <option value="1080p Medium">1080p Medium</option>
+    <option value="1440p Ultra">1440p Ultra</option>
+    <option value="4k Ultra">4k Ultra</option>
+</select>
+
     <div id="results"></div>
 </body>
 </html>
