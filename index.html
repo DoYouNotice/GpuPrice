@@ -54,7 +54,7 @@
                 dataType: "html",
                 success: function(response) {
                     var html = $.parseHTML(response);
-                    var tableRows = $(html).find('#slice-container-table-L8SfcAV5o28ayEFjzq6cfX-13 > tbody.table__body:nth-child(2) > tr:nth-child(1) > td:nth-child(3)');
+                    var tableRows = $(html).find('tbody.table__body:nth-child(2) > tr:nth-child(1) > td:nth-child(3)');
                     tableRows.each(function() {
                         var name = $(this).find('td:nth-child(1) > strong:nth-child(1) > a:nth-child(1)').text().trim();
                         var get1080pu = $(this).find('td:nth-child(2)').text().trim();
