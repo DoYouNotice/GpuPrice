@@ -4,7 +4,8 @@
     <title>Graphics Card Data</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        $(document).ready(function() {
+	 $(document).ready(function() {
+            var corsProxy = "https://simple-proxy.doyounotice.workers.dev/"; // Replace with your CORS proxy URL
             var graphicsCards = {
 		"Radeon RX 6700 10GB": "02+04+12+-+RX+6700",
 		"Radeon RX 6600": "02+04+12+-+RX+6600",
@@ -39,7 +40,7 @@
                 // ... your graphics card data ...
             };
 
-            var basePriceUrl = "https://geizhals.de/?cat=gra16_512&v=e&hloc=at&hloc=de&t=v&sort=p&bl1_id=30&xf=9816_";
+            var basePriceUrl = corsProxy + "https://geizhals.de/?cat=gra16_512&v=e&hloc=at&hloc=de&t=v&sort=p&bl1_id=30&xf=9816_";
             var cheapestPrices = {};
             var costPerFrame = {};
             var fpsData = {
@@ -50,7 +51,7 @@
             };
 
             $.ajax({
-                url: "https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html",
+                url: corsProxy + "https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html",
                 dataType: "html",
                 success: function(response) {
                     var html = $.parseHTML(response);
@@ -98,7 +99,7 @@
                 var url = basePriceUrl + cardUrl;
 
                 $.ajax({
-                    url: url,
+                    url: corsProxy + url,
                     dataType: "html",
                     async: false, // Make the request synchronous
                     success: function(response) {
